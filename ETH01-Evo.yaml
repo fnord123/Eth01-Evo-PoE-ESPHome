@@ -1,0 +1,44 @@
+esphome:
+  name: inkbird_iam_t1_poe_esphome
+  friendly_name: Inkbird T1 PoE ESPHome Relay
+
+esp32:
+  board: esp32-c3-devkitm-1
+  variant: esp32c3
+  framework:
+    type: esp-idf
+
+external_components:
+  - source: github://pr#6861
+    components:
+      - ethernet
+      
+# Enable logging
+logger:
+  hardware_uart: UART0
+  level: DEBUG
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: ""   # Replace with your own secret
+
+ota:
+  - platform: esphome
+    password: "" # Replace with your own password
+
+ethernet:
+  type: DM9051
+  clk_pin: GPIO07
+  mosi_pin: GPIO10
+  miso_pin: GPIO03
+  cs_pin: GPIO09
+  interrupt_pin: GPIO08
+  reset_pin: GPIO06
+  clock_speed: 20MHz
+# Optional static IP address. Will use DHCP if not set.
+#  manual_ip:
+#    static_ip: 192.168.30.110
+#    gateway: 192.168.30.1
+#    subnet: 255.255.255.0
+
