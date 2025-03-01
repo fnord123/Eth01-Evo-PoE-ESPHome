@@ -1,0 +1,115 @@
+esphome:
+  name: inkbird_iam_t1_poe_esphome
+  friendly_name: Inkbird T1 PoE ESPHome Relay
+
+esp32:
+  board: esp32-c3-devkitm-1
+  variant: esp32c3
+  framework:
+    type: esp-idf
+
+external_components:
+  - source: github://pr#6861
+    components:
+      - ethernet
+      
+# Enable logging
+logger:
+  hardware_uart: UART0
+  level: DEBUG
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "" # Insert your own key here
+
+ota:
+  - platform: esphome
+    password: "" # Insert your own password here
+
+ethernet:
+  type: DM9051
+  clk_pin: GPIO07
+  mosi_pin: GPIO10
+  miso_pin: GPIO03
+  cs_pin: GPIO09
+  interrupt_pin: GPIO08
+  reset_pin: GPIO06
+  clock_speed: 20MHz
+  # Optional static IP. Will use DHCP if not set.
+#  manual_ip:
+#    static_ip: 192.168.30.110
+#    gateway: 192.168.30.1
+#    subnet: 255.255.255.0
+
+ble_client:
+  # INKBIRD IAM-T1 MAC Address
+  - mac_address: 62:00:A1:3C:A0:97 #CHANGE MAC ADDRESS to your Inkbird
+    id: inkbird_iam_t1
+
+sensor:
+  # Temperature
+  - platform: ble_client
+    ble_client_id: inkbird_iam_t1
+    name: "IAM-T1 Temperature"
+    device_class: temperature
+    icon: 'mdi:temperature-celsius'
+    unit_of_measurement: '°C'
+    accuracy_decimals: 1  
+    service_uuid: 'ffe0'
+    characteristic_uuid: 'ffe4'
+    notify: true
+    type: characteristic
+    lambda: |-
+      uint8_t is_negative = x[4] & 0xF;
+      uint16_t temp = (x[5] << 8) | x[6];
+      if (is_negative == 1) {
+        return -((float)temp) / 10.0;
+      } else {
+        return ((float)temp) / 10.0;
+      }
+  # Humidity    
+  - platform: ble_client
+    ble_client_id: inkbird_iam_t1
+    name: "IAM-T1 Humidity"
+    device_class: humidity
+    icon: 'mdi:water-percent'    
+    unit_of_measurement: '%'
+    accuracy_decimals: 1
+    service_uuid: 'ffe0'
+    characteristic_uuid: 'ffe4'
+    notify: true
+    type: characteristic
+    lambda: |-
+      uint16_t humidity = (x[7] << 8) | x[8];
+      return ((float)humidity) / 10.0;
+  # Carbon Dioxide CO2
+  - platform: ble_client
+    ble_client_id: inkbird_iam_t1
+    name: "IAM-T1 CO2"
+    device_class: carbon_dioxide
+    icon: 'mdi:molecule-co2'    
+    unit_of_measurement: 'ppm'
+    accuracy_decimals: 0
+    service_uuid: 'ffe0'
+    characteristic_uuid: 'ffe4'
+    notify: true
+    type: characteristic
+    lambda: |-
+      uint16_t co2 = (x[9] << 8) | x[10];
+      return (float)co2;
+  # Air Pressure hPa    
+  - platform: ble_client
+    ble_client_id: inkbird_iam_t1
+    name: "IAM-T1 Air Pressure"
+    device_class: atmospheric_pressure
+    unit_of_measurement: 'hPa'
+    accuracy_decimals: 0
+    icon: 'mdi:gauge'
+    service_uuid: 'ffe0'
+    characteristic_uuid: 'ffe4'
+    notify: true
+    type: characteristic
+    lambda: |-
+      uint16_t pressure = (x[11] << 8) | x[12];
+      return (float)pressure;
