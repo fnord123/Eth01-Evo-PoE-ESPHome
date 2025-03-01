@@ -53,8 +53,8 @@ sensor:
     ble_client_id: inkbird_iam_t1
     name: "IAM-T1 Temperature"
     device_class: temperature
-    icon: 'mdi:temperature-celsius'
-    unit_of_measurement: '°C'
+    icon: 'mdi:temperature-celsius' # Change to fahrenheit if device is configured for those units
+    unit_of_measurement: '°C'       # Change to F if device is configured for those units
     accuracy_decimals: 1  
     service_uuid: 'ffe0'
     characteristic_uuid: 'ffe4'
